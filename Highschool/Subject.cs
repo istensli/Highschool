@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Highschool
 {
     internal class Subject
