@@ -3,22 +3,31 @@ namespace Highschool
 {
     internal class Subject
     {
-        string SubjectName { get; }
-        private Teacher _teacher;
-        private List<Student> _students;
+        public readonly string Name;
+        public Teacher Teacher { get; private set; }
+        public List<Student> Students { get; private set; }
 
-        public Subject(string subjectName, Teacher teacher) 
+        public Subject(Teacher teacher, string name) 
         {
-            SubjectName = subjectName;
-            _teacher = teacher;
-            _students = new List<Students>();
-        
+            Name = name;
+            Teacher = teacher;
+            Students = new List<Student>();
+            teacher.AddSubject(this);
         }
-
-        public void AddStudent(Student student)
+        internal void AddStudentToCourse(Student student)
         {
-            _students.Add(student);
-
+            Students.Add(student);
+            student.AddSubject(this);
+        }
+        public string[] GetStudents()
+        {
+            return Students.Select(s => s.Name).ToArray();
         }
     }
 }
+
+/* 
+ * One class could be media and communication
+ * Another class be Art
+ * A common subject could be math and Norwegian
+ */

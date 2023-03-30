@@ -1,30 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Highschool
 {
     internal class Room
     {
-        private string RoomName { get;}
-        private Schedule _schedule;
+        public string Name { get; }
+        public Subject[,] Schedule;
 
-        public Room(string roomName) 
+        public Room(string name) 
         {
-            RoomName = roomName;
-            Schedule = new Schedule();
-
+            Name = name;
+            Schedule = new Subject[5, 4];
         }
-
         public void AddBooking(Subject subject, int day, int hour) 
         {
-            _schedule.Add(subject, day, hour);
-                
-
+            Schedule[day, hour] = subject;
         }
-
-
     }
 }

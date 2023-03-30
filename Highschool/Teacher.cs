@@ -2,13 +2,19 @@
 
 namespace Highschool
 {
-    internal class Teacher
+    internal class Teacher : ISchoolMember
     {
-        public string Name { get;}
+        public List<Subject> Subjects { get; }
+        public string Name { get; }
 
-        public Teacher(string name) 
+        public Teacher(string name)
         {
             Name = name;
-        } 
+            Subjects = new List<Subject>();
+        }
+        public void AddSubject(Subject subject)
+        {
+            Subjects.Add(subject);
+        }
     }
 }
