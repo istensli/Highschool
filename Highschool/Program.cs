@@ -5,113 +5,63 @@
         static void Main(string[] args)
         {
             var school = new School();
-            var classroomOne = school.AddRoom("Classroom one");
-            var classroomTwo = school.AddRoom("Classroom two");
 
-            var teacherTerje = school.AddTeacher("Terje");
-            var teacherAmundsen = school.AddTeacher("Amundsen");
-            var teacherEskil = school.AddTeacher("Eskil");
+            var classroomOne = new Room("Classroom one");
+            var classroomTwo = new Room("Classroom two");
+            school.AddRooms(classroomOne, classroomTwo);
 
-            var martin = school.AddStudent("Martin");
-            var stian = school.AddStudent("Stian");
-            var geir = school.AddStudent("Geir");
-            var meabh = school.AddStudent("Meabh");
+            var teacherTerje = new Teacher("Terje");
+            var teacherAmundsen = new Teacher("Amundsen");
+            var teacherEskil =  new Teacher("Eskil");
+            school.AddTeachers(teacherTerje, teacherAmundsen, teacherEskil);
 
-            var computing = school.AddSubject(teacherTerje, "Computing");
-            var geography = school.AddSubject(teacherAmundsen, "Geography");
-            var keyCompetences = school.AddSubject(teacherEskil, "Key Competences");
+            var martin = new Student("Martin");
+            var stian = new Student("Stian");
+            var geir = new Student("Geir");
+            var meabh = new Student("Meabh");
+            school.AddStudents(martin, stian, geir, meabh);
 
-            computing.AddStudentToCourse(martin);
-            computing.AddStudentToCourse(stian);
-            geography.AddStudentToCourse(geir);
-            geography.AddStudentToCourse(meabh);
-            keyCompetences.AddStudentToCourse(martin);
-            keyCompetences.AddStudentToCourse(stian);
-            keyCompetences.AddStudentToCourse(geir);
-            keyCompetences.AddStudentToCourse(meabh);
+            var computing = new Subject(teacherTerje, "Computing");
+            var geography = new Subject(teacherAmundsen, "Geography");
+            var keyCompetences = new Subject(teacherEskil, "Key Competences");
+            school.AddSubjects(computing, geography, keyCompetences);
+
+            computing.AddStudents(martin, stian);
+            geography.AddStudents(geir, meabh);
+            keyCompetences.AddStudents(martin, stian, geir, meabh);
 
             var mediaAndCommunciationSubjects = new List<Subject>() { computing };
-            var mediaAndCommunication = school.AddClass("Media and Communication", mediaAndCommunciationSubjects);
+            var mediaAndCommunication = new Class("Media and Communication", mediaAndCommunciationSubjects);
             var generalStudiesSubjects = new List<Subject>() { geography };
-            var generalStudies = school.AddClass("General Studies", generalStudiesSubjects);
+            var generalStudies = new Class("General Studies", generalStudiesSubjects);
+            school.AddClasses(mediaAndCommunication, generalStudies);
 
-            classroomOne.AddBooking(computing, 0, 0);
-            classroomTwo.AddBooking(keyCompetences, 2, 3);
-            classroomOne.AddBooking(computing, 3, 1);
-            classroomOne.AddBooking(keyCompetences, 4, 2);
-            classroomTwo.AddBooking(geography, 1, 3);
+            school.AddBooking(new Booking(computing, classroomOne, DaysOfWeek.Monday, new TimeOnly(9,15), new TimeOnly(9,45)));
+            school.AddBooking(new Booking(keyCompetences, classroomOne, DaysOfWeek.Friday, new TimeOnly(12, 45), new TimeOnly(14,45)));
+            school.AddBooking(new Booking(keyCompetences, classroomTwo, DaysOfWeek.Wednesday, new TimeOnly(11, 5), new TimeOnly(12,35)));
+            school.AddBooking(new Booking(computing, classroomTwo, DaysOfWeek.Tuesday, new TimeOnly(14, 20), new TimeOnly(15,20)));
+            school.AddBooking(new Booking(geography, classroomTwo, DaysOfWeek.Thursday, new TimeOnly(10, 50), new TimeOnly(13, 50)));
             
             // Show teachers timetable
-            var terjeSchedule = school.GetTimetable(teacherTerje);
-            ShowIndividualTimetable(teacherTerje.Name, terjeSchedule);
+            var terjesTimeTable = school.GetTimeTable(teacherTerje);
+            SchoolConsole.ShowTimetable("Terje's Timetable", terjesTimeTable);
 
-            
             // Show student timetable
-            var martinSchedule = school.GetTimetable(martin);
-            ShowIndividualTimetable(martin.Name, martinSchedule);
-            
-            // Show students in each subject
-            Console.WriteLine("Computing subject:");
-            ShowSubjectOrClassTimetable(computing.GetStudents());
-            Console.WriteLine("Geography subject:");
-            ShowSubjectOrClassTimetable(geography.GetStudents());
-            Console.WriteLine("Key Competences subject:");
-            ShowSubjectOrClassTimetable(keyCompetences.GetStudents());
+            var martinsTimeTable = school.GetTimeTable(martin);
+            SchoolConsole.ShowTimetable("Martin's Timetable", martinsTimeTable);
 
-            // Show students in each class
-            Console.WriteLine("Media and Communcation class:");
-            ShowSubjectOrClassTimetable(mediaAndCommunication.GetStudents());
-            Console.WriteLine("General Studies class:");
-            ShowSubjectOrClassTimetable(generalStudies.GetStudents());
+            // Show students in each subject
+            SchoolConsole.ShowStudentList(computing);
+            SchoolConsole.ShowStudentList(geography);
+            SchoolConsole.ShowStudentList(keyCompetences);
+
+            //Show students in each class
+            SchoolConsole.ShowStudentList(mediaAndCommunication);
+            SchoolConsole.ShowStudentList(generalStudies);
             
             // Suggest available time for class
             var suggestedTimes = school.GetSuggestedTimes(computing);
-            ShowSuggestedTimes(computing.Name, suggestedTimes);
-        }
-        static void ShowIndividualTimetable(string name, string[,] schedule)
-        {
-            Console.WriteLine($"{name}'s Schedule:" + "\n");
-            var daysOfWeek = new string[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
-
-            for (int day = 0; day < schedule.GetLength(0); day++)
-            {
-                Console.WriteLine(daysOfWeek[day]);
-                for (int j = 0; j < schedule.GetLength(1); j++)
-                {
-                    var scheduleEntry = schedule[day, j];
-                    
-                    if (scheduleEntry != null)
-                    {
-                        Console.WriteLine(scheduleEntry);
-                    }
-                }
-            }
-            Console.WriteLine();
-        }
-        static void ShowSubjectOrClassTimetable(string[] students)
-        {
-            foreach (var student in students)
-            {
-                Console.WriteLine(student);
-            }
-            Console.WriteLine();
-        }
-        private static void ShowSuggestedTimes(string classname, List<List<string>> suggestedTimes)
-        {
-            var daysOfWeek = new string[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
-            Console.WriteLine($"Suggested times for {classname} class:" + "\n");
-            for (int i = 0; i < suggestedTimes.Count; i++)
-            {
-
-                List<string>? day = suggestedTimes[i];
-                Console.WriteLine(daysOfWeek[i]);
-
-                foreach (var availableTime in suggestedTimes[i])
-                {
-                    Console.WriteLine(availableTime);
-                }
-                Console.WriteLine();
-            }
+            SchoolConsole.ShowSuggestedTimes(suggestedTimes);
         }
     }
 }

@@ -2,7 +2,7 @@ using System;
 
 namespace Highschool
 {
-    internal class Student : ISchoolMember
+    public class Student : ISchoolMember
     {
         public List<Subject> Subjects { get; }
         public string Name { get; }

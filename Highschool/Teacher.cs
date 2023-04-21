@@ -2,7 +2,7 @@
 
 namespace Highschool
 {
-    internal class Teacher : ISchoolMember
+    public class Teacher : ISchoolMember
     {
         public List<Subject> Subjects { get; }
         public string Name { get; }

@@ -2,7 +2,7 @@
 
 namespace Highschool
 {
-    interface ISchoolMember
+    public interface ISchoolMember
     {
         List<Subject> Subjects { get; }
         string Name { get; }

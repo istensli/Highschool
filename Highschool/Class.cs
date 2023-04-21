@@ -1,30 +1,26 @@
 ﻿using System;
 namespace Highschool
 {
-    internal class Class
+    public class Class : ICourse
     {
-        private string _name;
-        private List<Subject> _subjects;
-        private List<Student> _students => RegisterStudents();
+        public string Name { get; }
+        public List<Subject> Subjects { get; private set; }
+        public List<Student> Students => GetRegisteredStudents();
+        public string[] StudentNames => Students.Select(s => s.Name).ToArray();
 
         public Class(string name, List<Subject> subjects)
         {
-            _name = name;
-            _subjects = subjects;
+            Name = name;
+            Subjects = subjects;
         }
-        private List<Student> RegisterStudents()
+        private List<Student> GetRegisteredStudents()
         {
             var students = new List<Student>();
-            foreach (var subject in _subjects)
+            foreach (var subject in Subjects)
             {
                 students.AddRange(subject.Students);
             }
             return students;
         }
-        public string[] GetStudents()
-        {
-            return _students.Select(s => s.Name).ToArray();
-        }
     }
 }
-
