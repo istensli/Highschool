@@ -1,7 +1,4 @@
-﻿using System.Reflection.Metadata;
-using System.Text.Json;
-using Highschool;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using Highschool;
 
 internal class Program
 {
@@ -256,12 +253,12 @@ internal class Program
             var rooms = school.GetRooms();
 
             var roomsObject = rooms.Select(r =>
-            {
-                return new
                 {
-                    name = r.Name,
-                };
-            });
+                    return new
+                    {
+                        name = r.Name,
+                    };
+                });
 
             return roomsObject;
         });
