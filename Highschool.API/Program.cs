@@ -1,5 +1,7 @@
-﻿using Highschool;
-//using ResponseTypes;
+﻿using System.Reflection.Metadata;
+using System.Text.Json;
+using Highschool;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 internal class Program
 {
@@ -30,7 +32,7 @@ internal class Program
         var schoolBuilder = new SchoolBuilder(new School());
         var school = schoolBuilder.Build();
 
-        app.MapGet("/", () => 
+        app.MapGet("/", () =>
         {
             return "Hello World!";
         });
@@ -54,6 +56,25 @@ internal class Program
             var subjectNames = student.Subjects.Select(sub => sub.Name);
 
             return new { name = student.Name, subjects = subjectNames };
+        });
+
+        app.MapGet("/students/{name}/timetable", (string name) =>
+        {
+            var students = school.GetStudents().FirstOrDefault(t => t.Name == name);
+            var timetableObject = school.GetTimeTable(students)
+                .Select(b =>
+                    {
+                        return new {
+                            subject = b.Subject.Name,
+                            room = b.Room.Name,
+                            day = b.Day,
+                            startTime = b.StartTime,
+                            endTime = b.EndTime
+                        };
+                    }
+                );
+
+            return timetableObject;
         });
 
         app.MapPost("/students/", (Student student) =>
@@ -84,11 +105,30 @@ internal class Program
             return new { name = teacher.Name, subjects = subjectNames };
         });
 
-        app.MapPost("/teacher/", (Teacher teacher) =>
+        app.MapPost("/teachers/", (Teacher teacher) =>
         {
             school.AddTeacher(teacher);
 
             return teacher;
+        });
+
+        app.MapGet("/teachers/{name}/timetable", (string name) =>
+        {
+            var teacher = school.GetTeachers().FirstOrDefault(t => t.Name == name);
+            var timetableObject = school.GetTimeTable(teacher)
+                .Select(b =>
+                    {
+                        return new {
+                            subject = b.Subject.Name,
+                            room = b.Room.Name,
+                            day = b.Day,
+                            startTime = b.StartTime,
+                            endTime = b.EndTime
+                        };
+                    }
+                );
+
+            return timetableObject;
         });
 
         app.MapGet("/subjects", () =>
@@ -122,11 +162,29 @@ internal class Program
             };
         });
 
-        app.MapPost("/subject/", (SubjectResponse r) =>
+        app.MapGet("/subjects/{name}/suggestedTimes", (string name) =>
+        {
+            var subject = school.GetSubjects().FirstOrDefault(t => t.Name == name);
+            var suggestedTimes = school.GetSuggestedTimes(subject)
+                .Select(b =>
+                {
+                    return new
+                    {
+                        room = b.Room.Name,
+                        day = b.Day,
+                        startTime = b.StartTime,
+                        endTime = b.EndTime
+                    };
+                });
+
+            return suggestedTimes;
+        });
+
+        app.MapPost("/subjects/", (SubjectRequest req) =>
         {
             var teacher = school.GetTeachers()
-                .FirstOrDefault(t => t.Name.ToLower() == r.TeacherName.ToLower());
-            var subject = new Subject(teacher, r.SubjectName);
+                .FirstOrDefault(t => t.Name.ToLower() == req.TeacherName.ToLower());
+            var subject = new Subject(teacher, req.SubjectName);
             var studentNames = subject.Students.Select(s => s.Name);
 
             school.AddSubject(subject);
@@ -161,15 +219,35 @@ internal class Program
 
         app.MapGet("/classes/{name}", (string name) =>
         {
-            var classes = school.GetClasses().FirstOrDefault(c => c.Name.Replace(" ", string.Empty) == name);
-            var studentNames = classes.Students.Select(s => s.Name);
-            var subjectNames = classes.Subjects.Select(sub => sub.Name);
+            var selectedClass = school.GetClasses().FirstOrDefault(c => c.Name.Replace(" ", string.Empty) == name);
+            var studentNames = selectedClass.Students.Select(s => s.Name);
+            var subjectNames = selectedClass.Subjects.Select(sub => sub.Name);
 
             return new
             {
-                name = classes.Name,
+                name = selectedClass.Name,
                 students = studentNames,
                 subject = subjectNames
+            };
+        });
+
+        app.MapPost("/classes/", (ClassRequest req) =>
+        {
+            var reqSubjectNames = req.SubjectNames;
+            var subjects = school.GetSubjects()
+                .Where(sub => reqSubjectNames.Any(sn => sn == sub.Name))
+                .ToList();
+
+            var newClass = new Class(req.ClassName, subjects);
+
+            var studentNames = newClass.Students.Select(s => s.Name);
+            var subjectNames = newClass.Subjects.Select(sub => sub.Name);
+
+            return new
+            {
+                name = newClass.Name,
+                students = studentNames,
+                subjects = subjectNames
             };
         });
 
@@ -205,33 +283,27 @@ internal class Program
             school.AddRoom(room);
 
             return room;
-        }); 
+        });
+
+        app.MapPost("/bookings/", (BookingRequest req) =>
+        {
+            var subject = school.GetSubjects().FirstOrDefault(s => s.Name == req.Subject);
+            var room = school.GetRooms().FirstOrDefault(r => r.Name == req.Room);
+
+            var booking = new Booking(subject, room, req.Day, req.StartTime, req.EndTime);
+
+            school.AddBooking(booking);
+
+            return new
+            {
+                subject = booking.Subject.Name,
+                room = booking.Room.Name,
+                day = booking.Day,
+                startTime = booking.StartTime,
+                endTime = booking.EndTime
+            };
+        });
 
         app.Run();
     }
 }
-
-/*
- * 
- * 
-
-
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
-
-*/

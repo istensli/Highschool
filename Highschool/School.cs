@@ -31,7 +31,7 @@ namespace Highschool
 
         public void AddTeacher(Teacher teacher)
         {
-                _teachers.Add(teacher);
+            _teachers.Add(teacher);
         }
 
         public List<Teacher> GetTeachers()
