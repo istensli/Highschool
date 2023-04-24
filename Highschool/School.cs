@@ -9,7 +9,7 @@ namespace Highschool
         private List<Class> _classes;
         private List<Student> _students;
         private List<Teacher> _teachers;
-        private Schedule _schedule;
+        private Timetable _timetable;
 
         public School()
         {
@@ -18,7 +18,7 @@ namespace Highschool
             _classes = new List<Class>();
             _students = new List<Student>();
             _teachers = new List <Teacher>();
-            _schedule = new Schedule();
+            _timetable = new Timetable();
         }
 
         public void AddTeachers(params Teacher[] teachers)
@@ -63,17 +63,17 @@ namespace Highschool
 
         public Booking[] GetSuggestedTimes(Subject subject)
         {
-            return _schedule.GetSuggestedTimes(subject, _rooms);
+            return _timetable.GetSuggestedTimes(subject, _rooms);
         }
 
         public void AddBooking(Booking booking)
         {
-            _schedule.AddBooking(booking, _rooms);
+            _timetable.AddBooking(booking, _rooms);
         }
 
         public Booking[] GetTimeTable(ISchoolMember schoolMembers)
         {
-            return _schedule.GetTimeTable(schoolMembers, _rooms);
+            return _timetable.GetTimeTable(schoolMembers, _rooms);
         }
     }
 }

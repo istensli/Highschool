@@ -2,12 +2,12 @@
 
 namespace Highschool
 {
-    public class Schedule
+    public class Timetable
     {
         private List<Booking> _bookings;
         private List<Room> _rooms;
 
-        public Schedule()
+        public Timetable()
         {
             _bookings = new List<Booking>();
         }
