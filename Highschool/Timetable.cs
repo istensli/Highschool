@@ -72,39 +72,42 @@ namespace Highschool
                 .ThenBy(t => t.StartTime);
         }
 
-        private List<Booking> GetSuggestedTimesForRoom(List<Booking> alreadyBooked)
+        private List<Booking> GetSuggestedTimesForRoom(List<Booking> bookings)
         {
-            var room = alreadyBooked[0].Room;
+            var room = bookings[0].Room;
             var times = new List<Booking>();
 
-            if (alreadyBooked[0].StartTime.Hour == 9 && alreadyBooked[0].StartTime.Minute > 0)
+            if (IsFirstBookingInListAfter9AM(bookings))
             {
-                var startTime = new TimeOnly(9, 0);
-                times.Add(new Booking(null, room, alreadyBooked[0].Day, startTime, alreadyBooked[0].StartTime));
+                var startOfDayBooking = GetStartOfDayBooking(room, bookings[0]);
+                times.Add(startOfDayBooking);
             }
 
-            for (int i = 0; i < alreadyBooked.Count(); i++)
+            for (int i = 0; i < bookings.Count(); i++)
             {
-                var cb = alreadyBooked[i];
+                var currentBooking = bookings[i];
 
-                if ((i + 1 != alreadyBooked.Count()) && cb.Day == alreadyBooked[i+1].Day)
+                if (IsCurrentBookingTheSameDayAsNextBooking(bookings, i))
                 {
-                    var endTime = alreadyBooked[i+1].StartTime;
-                    times.Add(new Booking(null, room, cb.Day, cb.EndTime, endTime));
+                    var bookingBetweenCurrentAndNextBooking = GetBookingBetweenCurrentAndNextBooking(bookings, room, i);
+                    times.Add(bookingBetweenCurrentAndNextBooking);
                 }
-                else if ((i+1 != alreadyBooked.Count()) && cb.Day != alreadyBooked[i+1].Day)
+                else if (IsCurrentBookingADifferentDayThanNextBooking(bookings, currentBooking.Day, i))
                 {
-                    var nextBooking = alreadyBooked[i + 1];
-                    times.Add(new Booking(null, room, cb.Day, cb.EndTime, new TimeOnly(17, 0)));
+                    var nextBooking = bookings[i + 1];
+                    var endOfDayBooking = GetEndOfDayBooking(room, currentBooking);
+                    times.Add(endOfDayBooking);
 
-                    if(nextBooking.StartTime.Hour >= 9 && nextBooking.StartTime.Minute > 0)
+                    if(IsBookingAfterStartOfDay(nextBooking))
                     {
-                        times.Add(new Booking(null, room, nextBooking.Day, new TimeOnly(9, 0), nextBooking.StartTime));
+                        var startOfDayBooking = GetStartOfDayBooking(room, nextBooking);
+                        times.Add(startOfDayBooking);
                     }
                 }
-                else if (i == alreadyBooked.Count() - 1 && cb.EndTime.Hour != 17)
+                else if (IsLastBookingBeforeTheEndOfTheDay(bookings, i))
                 {
-                    times.Add(new Booking(null, room, cb.Day, cb.EndTime, new TimeOnly(17, 0)));
+                    var endOfDayBooking = GetEndOfDayBooking(room, currentBooking);
+                    times.Add(endOfDayBooking);
                 }
             }
 
@@ -112,6 +115,47 @@ namespace Highschool
             times.AddRange(daysWithNoBookingClashes);
 
             return times;
+        }
+
+        private Booking GetBookingBetweenCurrentAndNextBooking(List<Booking> bookings, Room room, int index)
+        {
+            var endTime = bookings[index+1].StartTime;
+            return new Booking(null, room, bookings[index].Day, bookings[index].EndTime, endTime);
+        }
+
+        private bool IsCurrentBookingTheSameDayAsNextBooking(List<Booking> bookings, int index)
+        {
+            return ((index + 1 != bookings.Count()) && bookings[index].Day == bookings[index + 1].Day);
+        }
+
+        private bool IsLastBookingBeforeTheEndOfTheDay(List<Booking> bookings, int index)
+        {
+            return (index == bookings.Count() - 1 && bookings[index].EndTime.Hour != 17);
+        }
+
+        private bool IsBookingAfterStartOfDay(Booking booking)
+        {
+            return (booking.StartTime.Hour >= 9 && booking.StartTime.Minute > 0);
+        }
+
+        private bool IsCurrentBookingADifferentDayThanNextBooking(List<Booking> bookings, DaysOfWeek day, int i)
+        {
+             return (i + 1 != bookings.Count() && day != bookings[i + 1].Day) ;
+        }
+
+        private bool IsFirstBookingInListAfter9AM(List<Booking> bookings)
+        {
+            return (bookings[0].StartTime.Hour == 9 && bookings[0].StartTime.Minute > 0);
+        }
+
+        private Booking GetStartOfDayBooking(Room room, Booking nextBooking)
+        {
+            return new Booking(null, room, nextBooking.Day, new TimeOnly(9, 0), nextBooking.StartTime);
+        }
+
+        private Booking GetEndOfDayBooking(Room room, Booking previousBooking)
+        {
+            return new Booking(null, room, previousBooking.Day, previousBooking.EndTime, new TimeOnly(17, 0));
         }
 
         private List<Booking> MergeBookings(List<Booking> roomBookings, List<Booking> classMemberBookings)

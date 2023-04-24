@@ -29,12 +29,32 @@ namespace Highschool
             }
         }
 
+        public void AddTeacher(Teacher teacher)
+        {
+                _teachers.Add(teacher);
+        }
+
+        public List<Teacher> GetTeachers()
+        {
+            return _teachers;
+        }
+
         public void AddStudents(params Student[] students)
         {
             foreach (var student in students)
             {
                 _students.Add(student);
             }
+        }
+
+        public void AddStudent(Student student)
+        {
+            _students.Add(student);
+        }
+
+        public List<Student> GetStudents()
+        {
+            return _students;
         }
 
         public void AddRooms(params Room[] rooms)
@@ -45,6 +65,16 @@ namespace Highschool
             }
         }
 
+        public void AddRoom(Room room)
+        {
+            _rooms.Add(room);
+        }
+
+        public List<Room> GetRooms()
+        {
+            return _rooms;
+        }
+
         public void AddSubjects(params Subject[] subjects)
         {
             foreach (var subject in subjects)
@@ -53,12 +83,27 @@ namespace Highschool
             }
         }
 
+        public void AddSubject(Subject subject)
+        {
+            _subjects.Add(subject);
+        }
+
+        public List<Subject> GetSubjects()
+        {
+            return _subjects;
+        }
+
         public void AddClasses(params Class[] classes)
         {
             foreach (var clas in classes)
             {
                 _classes.Add(clas);
             }
+        }
+
+        public List<Class> GetClasses()
+        {
+            return _classes;
         }
 
         public Booking[] GetSuggestedTimes(Subject subject)
