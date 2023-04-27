@@ -2,24 +2,32 @@
 
 namespace Highschool
 {
-    internal class Subject
+    public class Subject : ICourse
     {
-        string SubjectName { get; }
-        private Teacher _teacher;
-        private List<Student> _students;
+        public string Name { get; }
+        public Teacher Teacher { get; private set; }
+        public List<Student> Students { get; private set; }
+        public string[] StudentNames => Students.Select(s => s.Name).ToArray();
 
-        public Subject(string subjectName, Teacher teacher) 
+        public Subject(Teacher teacher, string name) 
         {
-            SubjectName = subjectName;
-            _teacher = teacher;
-            _students = new List<Students>();
-        
+            Name = name;
+            Teacher = teacher;
+            Students = new List<Student>();
+            teacher.AddSubject(this);
         }
-
+        public void AddStudents(params Student[] students)
+        {
+            foreach (var student in students)
+            {
+                Students.Add(student);
+                student.AddSubject(this);
+            }
+        }
         public void AddStudent(Student student)
         {
-            _students.Add(student);
-
+            Students.Add(student);
+            student.AddSubject(this);
         }
     }
 }

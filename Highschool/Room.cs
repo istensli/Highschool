@@ -2,25 +2,13 @@
 
 namespace Highschool
 {
-    internal class Room
+    public class Room
     {
-        private string RoomName { get;}
-        private Schedule _schedule;
+        public string Name { get; }
 
-        public Room(string roomName) 
+        public Room(string name) 
         {
-            RoomName = roomName;
-            Schedule = new Schedule();
-
+            Name = name;
         }
-
-        public void AddBooking(Subject subject, int day, int hour) 
-        {
-            _schedule.Add(subject, day, hour);
-                
-
-        }
-
-
     }
 }
