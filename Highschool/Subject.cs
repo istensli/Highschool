@@ -23,5 +23,10 @@ namespace Highschool
                 student.AddSubject(this);
             }
         }
+        public void AddStudent(Student student)
+        {
+            Students.Add(student);
+            student.AddSubject(this);
+        }
     }
 }

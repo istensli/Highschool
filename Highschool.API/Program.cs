@@ -29,11 +29,6 @@ internal class Program
         var schoolBuilder = new SchoolBuilder(new School());
         var school = schoolBuilder.Build();
 
-        app.MapGet("/", () =>
-        {
-            return "Hello World!";
-        });
-
         app.MapGet("/students", () =>
         {
             var students = school.GetStudents();
@@ -41,24 +36,61 @@ internal class Program
             var studentObject = students.Select(s =>
             {
                 var subjectNames = s.Subjects.Select(sub => sub.Name);
-                return new { name = s.Name, subjects = subjectNames };
+                var classes = school.GetClasses()
+                    .Where(c => c.Students.Any(cs => cs == s))
+                    .Select(c => c.Name);
+
+                return new {
+                    name = s.Name,
+                    subjects = subjectNames,
+                    classes,
+                    role = s.Role,
+                    profilePicture = s.ProfilePicture
+                };
             });
 
             return studentObject;
         });
 
-        app.MapGet("/students/{name}", (string name) =>
+        app.MapGet("/students/{studentName}", (string studentName) =>
         {
-            var student = school.GetStudents().FirstOrDefault(t => t.Name == name);
-            var subjectNames = student.Subjects.Select(sub => sub.Name);
+            Student student;
+            if (studentName.Any(c => c == ' '))
+            {
+                student = school.GetStudents().FirstOrDefault(t => t.Name == studentName);
+            }
+            else
+            {
+                student = school.GetStudents().FirstOrDefault(t => t.Name.Replace(" ", string.Empty) == studentName);
+            }
 
-            return new { name = student.Name, subjects = subjectNames };
+            var subjectNames = student.Subjects.Select(sub => sub.Name);
+            var classes = school.GetClasses()
+                    .Where(c => c.Students.Any(cs => cs == student))
+                    .Select(c => c.Name);
+
+            return new {
+                name = student.Name,
+                subjects = subjectNames,
+                classes,
+                role = student.Role,
+                profilePicture = student.ProfilePicture
+            };
         });
 
-        app.MapGet("/students/{name}/timetable", (string name) =>
+        app.MapGet("/students/{studentName}/timetable", (string studentName) =>
         {
-            var students = school.GetStudents().FirstOrDefault(t => t.Name == name);
-            var timetableObject = school.GetTimeTable(students)
+            Student student;
+            if (studentName.Any(c => c == ' '))
+            {
+                student = school.GetStudents().FirstOrDefault(t => t.Name == studentName);
+            }
+            else
+            {
+                student = school.GetStudents().FirstOrDefault(t => t.Name.Replace(" ", string.Empty) == studentName);
+            }
+
+            var timetableObject = school.GetTimeTable(student)
                 .Select(b =>
                     {
                         return new {
@@ -74,44 +106,86 @@ internal class Program
             return timetableObject;
         });
 
-        app.MapPost("/students/", (Student student) =>
+        app.MapPost("/students/", (StudentRequest studentRequest) =>
         {
-            school.AddStudent(student);
+            var student = new Student(studentRequest.Name, studentRequest.ProfilePicture);
+            var subjects = school.GetClasses().FirstOrDefault(c => c.Name == studentRequest.ClassName).Subjects;
+            var keyCompetences = school.GetSubjects().FirstOrDefault(sub => sub.Name == "Key Competences");
 
-            return student;
+            school.AddStudent(student);
+            keyCompetences.AddStudent(student);
+
+            foreach (var subject in subjects)
+            {
+                subject.AddStudent(student);
+            }
+
+            var subjectNames = student.Subjects.Select(sub => sub.Name);
+            var classes = school.GetClasses()
+                    .Where(c => c.Students.Any(cs => cs == student))
+                    .Select(c => c.Name);
+
+            return new {
+                name = student.Name,
+                subjects = subjectNames,
+                classes,
+                role = student.Role,
+                profilePicture = student.ProfilePicture
+            };
         });
 
         app.MapGet("/teachers", () =>
         {
             var teachers = school.GetTeachers();
 
-            var teachersObject = teachers.Select(s =>
+            var teachersObject = teachers.Select(t =>
             {
-                var subjectNames = s.Subjects.Select(sub => sub.Name);
-                return new { name = s.Name, subjects = subjectNames };
+                var subjectNames = t.Subjects.Select(sub => sub.Name);
+                return new {
+                    name = t.Name,
+                    subjects = subjectNames,
+                    profilePicture = t.ProfilePicture
+                };
             });
 
             return teachersObject;
         });
 
-        app.MapGet("/teachers/{name}", (string name) =>
+        app.MapGet("/teachers/{teacherName}", (string teacherName) =>
         {
-            var teacher = school.GetTeachers().FirstOrDefault(t => t.Name == name);
+            Teacher teacher;
+            if (teacherName.Any(c => c == ' '))
+            {
+                teacher = school.GetTeachers().FirstOrDefault(t => t.Name == teacherName);
+
+            }
+            else
+            {
+                teacher = school.GetTeachers().FirstOrDefault(t => t.Name.Replace(" ", string.Empty) == teacherName);
+            }
+
             var subjectNames = teacher.Subjects.Select(sub => sub.Name);
-
-            return new { name = teacher.Name, subjects = subjectNames };
+                
+            return new {    
+                name = teacher.Name,
+                subjects = subjectNames,
+                profilePicture = teacher.ProfilePicture
+            };
         });
 
-        app.MapPost("/teachers/", (Teacher teacher) =>
+        app.MapGet("/teachers/{teacherName}/timetable", (string teacherName) =>
         {
-            school.AddTeacher(teacher);
+            Teacher teacher;
+            if (teacherName.Any(c => c == ' '))
+            {
+                teacher = school.GetTeachers().FirstOrDefault(t => t.Name == teacherName);
 
-            return teacher;
-        });
+            }
+            else
+            {
+                teacher = school.GetTeachers().FirstOrDefault(t => t.Name.Replace(" ", string.Empty) == teacherName);
+            }
 
-        app.MapGet("/teachers/{name}/timetable", (string name) =>
-        {
-            var teacher = school.GetTeachers().FirstOrDefault(t => t.Name == name);
             var timetableObject = school.GetTimeTable(teacher)
                 .Select(b =>
                     {
@@ -126,6 +200,21 @@ internal class Program
                 );
 
             return timetableObject;
+        });
+
+        app.MapPost("/teachers/", (TeacherRequest teacherRequest) =>
+        {
+            var teacher = new Teacher(teacherRequest.Name, teacherRequest.ProfilePicture);
+            school.AddTeacher(teacher);
+
+            var subjectNames = teacher.Subjects.Select(sub => sub.Name);
+
+            return new
+            {
+                name = teacher.Name,
+                subjects = subjectNames,
+                profilePicture = teacher.ProfilePicture
+            };
         });
 
         app.MapGet("/subjects", () =>
@@ -146,22 +235,38 @@ internal class Program
             return subjectsObject;
         });
 
-        app.MapGet("/subjects/{name}", (string name) =>
+        app.MapGet("/subjects/{subjectName}", (string subjectName) =>
         {
-            var subject = school.GetSubjects().FirstOrDefault(t => t.Name == name);
-            var studentNames = subject.Students.Select(s => s.Name);
+            Subject subject;
+            if (subjectName.Any(c => c == ' '))
+            {
+                subject = school.GetSubjects().FirstOrDefault(t => t.Name == subjectName);
+            }
+            else
+            {
+                subject = school.GetSubjects().FirstOrDefault(t => t.Name.Replace(" ", string.Empty) == subjectName);
+            }
 
             return new
             {
                 name = subject.Name,
                 teacher = subject.Teacher.Name,
-                students = studentNames
+                students = subject.StudentNames
             };
         });
 
-        app.MapGet("/subjects/{name}/suggestedTimes", (string name) =>
+        app.MapGet("/subjects/{subjectName}/suggestedTimes", (string subjectName) =>
         {
-            var subject = school.GetSubjects().FirstOrDefault(t => t.Name == name);
+            Subject subject;
+            if (subjectName.Any(c => c == ' '))
+            {
+                subject = school.GetSubjects().FirstOrDefault(t => t.Name == subjectName);
+            }
+            else
+            {
+                subject = school.GetSubjects().FirstOrDefault(t => t.Name.Replace(" ", string.Empty) == subjectName);
+            }
+
             var suggestedTimes = school.GetSuggestedTimes(subject)
                 .Select(b =>
                 {
@@ -177,14 +282,19 @@ internal class Program
             return suggestedTimes;
         });
 
-        app.MapPost("/subjects/", (SubjectRequest req) =>
+        app.MapPost("/subjects/", (SubjectRequest subjectRequest) =>
         {
             var teacher = school.GetTeachers()
-                .FirstOrDefault(t => t.Name.ToLower() == req.TeacherName.ToLower());
-            var subject = new Subject(teacher, req.SubjectName);
-            var studentNames = subject.Students.Select(s => s.Name);
+                .FirstOrDefault(t => t.Name.ToLower() == subjectRequest.Teacher.ToLower());
+            var students = school.GetStudents()
+                .Where(s => subjectRequest.Students.Any(srs => s.Name.ToLower() == srs.ToLower()))
+                .ToArray();
+            var subject = new Subject(teacher, subjectRequest.SubjectName);
 
+            subject.AddStudents(students);
             school.AddSubject(subject);
+
+            var studentNames = subject.Students.Select(s => s.Name);
 
             return new
             {
@@ -214,9 +324,18 @@ internal class Program
             return classesObject;
         });
 
-        app.MapGet("/classes/{name}", (string name) =>
+        app.MapGet("/classes/{className}", (string className) =>
         {
-            var selectedClass = school.GetClasses().FirstOrDefault(c => c.Name.Replace(" ", string.Empty) == name);
+            Class selectedClass;
+            if (className.Any(c => c == ' '))
+            {
+                selectedClass = school.GetClasses().FirstOrDefault(c => c.Name == className);
+            }
+            else
+            {
+                selectedClass = school.GetClasses().FirstOrDefault(c => c.Name.Replace(" ", string.Empty) == className);
+            }
+
             var studentNames = selectedClass.Students.Select(s => s.Name);
             var subjectNames = selectedClass.Subjects.Select(sub => sub.Name);
 
@@ -263,9 +382,17 @@ internal class Program
             return roomsObject;
         });
 
-        app.MapGet("/rooms/{name}", (string name) =>
+        app.MapGet("/rooms/{roomName}", (string roomName) =>
         {
-            var room = school.GetRooms().FirstOrDefault(c => c.Name.Replace(" ", string.Empty) == name); ;
+            Room room;
+            if (roomName.Any(c => c == ' '))
+            {
+                room = school.GetRooms().FirstOrDefault(c => c.Name == roomName);
+            }
+            else
+            {
+                room = school.GetRooms().FirstOrDefault(c => c.Name == roomName);
+            }
 
             return new
             {

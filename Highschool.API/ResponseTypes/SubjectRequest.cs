@@ -1,12 +1,13 @@
 ﻿public class SubjectRequest
 {
     public string SubjectName { get; }
-    public string TeacherName { get; }
-    public string[] StudentNames { get; }
+    public string Teacher { get; }
+    public string[] Students { get; }
 
-    public SubjectRequest(string subjectName, string teacherName)
+    public SubjectRequest(string subjectName, string teacher, string[] students)
     {
         SubjectName = subjectName;
-        TeacherName = teacherName;
+        Teacher = teacher;
+        Students = students;
     }
 }

@@ -14,15 +14,15 @@
             var classroomTwo = new Room("Classroom Two");
             _school.AddRooms(classroomOne, classroomTwo);
 
-            var teacherTerje = new Teacher("Terje");
-            var teacherAmundsen = new Teacher("Amundsen");
-            var teacherEskil = new Teacher("Eskil");
+            var teacherTerje = new Teacher("Terje", "https://getacademy.no/hubfs/Imported%20sitepage%20images/Terje.jpg");
+            var teacherAmundsen = new Teacher("Amundsen", "https://bok365.no/wp-content/uploads/2022/05/Amundsen_in_fur_skins-1536x1053.jpg");
+            var teacherEskil = new Teacher("Eskil", "https://getacademy.no/hubfs/Imported%20sitepage%20images/eskil.jpg");
             _school.AddTeachers(teacherTerje, teacherAmundsen, teacherEskil);
 
-            var martin = new Student("Martin");
-            var stian = new Student("Stian");
-            var geir = new Student("Geir");
-            var meabh = new Student("Meabh");
+            var martin = new Student("Martin", "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/001.png");
+            var stian = new Student("Stian", "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/002.png");
+            var geir = new Student("Geir", "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/003.png");
+            var meabh = new Student("Meabh", "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/004.png");
             _school.AddStudents(martin, stian, geir, meabh);
 
             var computing = new Subject(teacherTerje, "Computing");

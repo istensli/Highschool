@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Highschool
+﻿namespace Highschool
 {
     public class School
     {

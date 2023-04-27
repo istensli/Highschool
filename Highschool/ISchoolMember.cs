@@ -6,6 +6,7 @@ namespace Highschool
     {
         List<Subject> Subjects { get; }
         string Name { get; }
+        string Role { get; }
 
         public abstract void AddSubject(Subject subject);
     }
